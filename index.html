@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>실시간 시급 계산기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+        }
+        .mono-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums; /* 숫자가 고정 폭을 가지도록 설정 */
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .glow-text {
+            text-shadow: 0 0 15px rgba(59, 130, 246, 0.5); /* blue-500 glow */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="glass-panel w-full max-w-md rounded-3xl shadow-2xl overflow-hidden p-6 relative">
+        <!-- 배경 장식 요소 -->
+        <div class="absolute -top-20 -right-20 w-40 h-40 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+
+        <div class="relative z-10 flex flex-col items-center">
+            
+            <div class="text-sm text-slate-500 font-semibold mb-2 uppercase tracking-widest">현재 시각</div>
+            <div id="currentTime" class="text-5xl md:text-6xl font-extrabold text-slate-800 mono-number mb-8 glow-text tracking-tight flex items-baseline">
+                <!-- Javascript에서 시간 채워짐 -->
+                00:00:00
+            </div>
+
+            <div class="w-full bg-slate-100 rounded-2xl p-4 mb-6 shadow-inner">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-semibold text-slate-500">근무 시간</span>
+                    <span class="text-base font-bold text-slate-700">08:00 - 18:00</span>
+                </div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-semibold text-slate-500">점심 시간 (제외)</span>
+                    <span class="text-base font-bold text-slate-700">12:00 - 13:00</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-semibold text-slate-500">적용 시급</span>
+                    <span class="text-base font-bold text-blue-600">30,000원</span>
+                </div>
+            </div>
+
+            <!-- 진행률 및 표정 변화 -->
+            <div class="w-full bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6 flex flex-col items-center">
+                <div class="text-sm font-semibold text-slate-500 mb-3">퇴근까지 달성률</div>
+                <div class="flex items-center justify-center gap-5 w-full">
+                    <div id="statusEmoji" class="text-5xl transition-transform duration-300 transform hover:scale-110">😫</div>
+                    <div class="flex-1">
+                        <div class="flex justify-between items-end mb-2">
+                            <span id="progressPercentText" class="text-2xl font-bold text-slate-700 mono-number">0.0000%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                            <div id="progressBar" class="bg-gradient-to-r from-blue-400 to-indigo-500 h-3 rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="w-full space-y-4">
+                
+                <!-- 세전 금액 (명목액) -->
+                <div class="relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl transform transition-transform group-hover:scale-105 opacity-50"></div>
+                    <div class="relative bg-white border border-blue-100 rounded-2xl p-5 shadow-sm">
+                        <div class="text-sm font-bold text-blue-500 mb-1">세전 누적 금액 (명목액)</div>
+                        <div class="flex items-end gap-2">
+                            <span id="grossAmount" class="text-3xl font-extrabold text-slate-800 mono-number">0</span>
+                            <span class="text-lg font-bold text-slate-600 mb-1">원</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 세후 금액 -->
+                <div class="relative group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl transform transition-transform group-hover:scale-105 opacity-50"></div>
+                    <div class="relative bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
+                        <div class="flex justify-between items-center mb-1">
+                            <div class="text-sm font-bold text-emerald-600">세후 누적 금액</div>
+                            <div class="text-xs font-semibold text-slate-400 px-2 py-1 bg-slate-100 rounded-full">세율 3.3% 적용</div>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <span id="netAmount" class="text-4xl font-extrabold text-slate-800 mono-number text-emerald-700">0</span>
+                            <span class="text-xl font-bold text-emerald-600 mb-1">원</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
+                <p>본 계산기는 오늘(자정 이후)을 기준으로 작동합니다.</p>
+                <p>소수점 이하는 버림 처리됩니다.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // DOM 요소 가져오기
+        const timeDisplay = document.getElementById('currentTime');
+        const grossAmountDisplay = document.getElementById('grossAmount');
+        const netAmountDisplay = document.getElementById('netAmount');
+        const progressPercentText = document.getElementById('progressPercentText');
+        const progressBar = document.getElementById('progressBar');
+        const statusEmoji = document.getElementById('statusEmoji');
+
+        // 설정 값
+        const HOURLY_WAGE = 30000; // 시급 30,000원
+        const TAX_RATE = 0.033; // 세율 3.3%
+        const WAGE_PER_SECOND = HOURLY_WAGE / 3600; // 초당 급여
+        
+        // 점심시간 설정 (12:00:00 ~ 13:00:00)
+        const LUNCH_START_HOUR = 12;
+        const LUNCH_END_HOUR = 13;
+
+        // 퇴근 시간 및 총 근무 시간 설정
+        const END_HOUR = 18;
+        const TOTAL_WORK_SECONDS = 9 * 3600; // 8시~18시 중 점심 1시간 제외 (총 9시간)
+
+        // 시작 시간 설정 (오늘 오전 8시)
+        const getStartTime = () => {
+            const now = new Date();
+            const startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0);
+            return startTime;
+        };
+
+        const formatTime = (date) => {
+            const h = String(date.getHours()).padStart(2, '0');
+            const m = String(date.getMinutes()).padStart(2, '0');
+            const s = String(date.getSeconds()).padStart(2, '0');
+            
+            // 시, 분, 초 단위로 스타일링을 다르게 하기 위해 HTML로 반환
+            return `<span class="text-blue-600">${h}</span><span class="text-slate-400 mx-1">:</span><span class="text-blue-500">${m}</span><span class="text-slate-400 mx-1 text-4xl">:</span><span class="text-blue-400 text-4xl">${s}</span>`;
+        };
+
+        const formatCurrency = (number) => {
+            return Math.floor(number).toLocaleString('ko-KR');
+        };
+
+        const calculateEarnings = () => {
+            const now = new Date();
+            const startTime = getStartTime();
+            
+            // UI에 현재 시간 업데이트
+            timeDisplay.innerHTML = formatTime(now);
+
+            // 아직 시작 시간 전이면 0원으로 처리
+            if (now < startTime) {
+                grossAmountDisplay.textContent = '0';
+                netAmountDisplay.textContent = '0';
+                return;
+            }
+
+            // 근무 기간 계산 로직 (점심시간 제외)
+            let totalWorkedSeconds = 0;
+            
+            // 오늘 점심시간 객체 생성
+            const lunchStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), LUNCH_START_HOUR, 0, 0);
+            const lunchEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), LUNCH_END_HOUR, 0, 0);
+
+            // 현재 시간이 오전 8시 이후인 경우
+            if (now >= startTime) {
+                const endTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), END_HOUR, 0, 0);
+
+                // 18시(퇴근 시간) 이후인 경우 최대치로 고정
+                if (now >= endTime) {
+                    totalWorkedSeconds = TOTAL_WORK_SECONDS;
+                }
+                // 1. 현재 시간이 점심시간 시작 전인 경우
+                else if (now <= lunchStart) {
+                    totalWorkedSeconds = (now.getTime() - startTime.getTime()) / 1000;
+                } 
+                // 2. 현재 시간이 점심시간 중인 경우 (점심 시작 전까지만 근무 인정)
+                else if (now > lunchStart && now < lunchEnd) {
+                    totalWorkedSeconds = (lunchStart.getTime() - startTime.getTime()) / 1000;
+                } 
+                // 3. 현재 시간이 점심시간 종료 후인 경우 (점심시간 1시간을 뺌)
+                else if (now >= lunchEnd) {
+                    const rawWorkedSeconds = (now.getTime() - startTime.getTime()) / 1000;
+                    const lunchSeconds = (lunchEnd.getTime() - lunchStart.getTime()) / 1000; // 3600초
+                    totalWorkedSeconds = rawWorkedSeconds - lunchSeconds;
+                }
+            }
+
+            // 진행률 계산 및 이모티콘 업데이트
+            let percentage = (totalWorkedSeconds / TOTAL_WORK_SECONDS) * 100;
+            if (percentage > 100) percentage = 100;
+            if (percentage < 0) percentage = 0;
+
+            progressPercentText.textContent = percentage.toFixed(4) + '%';
+            progressBar.style.width = percentage + '%';
+
+            // 6단계 이모티콘 변화
+            let emoji = '😫'; // 0~20% (매우 힘듦)
+            if (percentage >= 100) emoji = '🥳';      // 100% (퇴근, 환희)
+            else if (percentage >= 80) emoji = '😆'; // 80~99% (매우 기쁨)
+            else if (percentage >= 60) emoji = '🙂'; // 60~79% (미소)
+            else if (percentage >= 40) emoji = '😐'; // 40~59% (무표정)
+            else if (percentage >= 20) emoji = '😟'; // 20~39% (슬픔, 지침)
+            
+            statusEmoji.textContent = emoji;
+
+            // 금액 계산
+            const grossAmount = totalWorkedSeconds * WAGE_PER_SECOND;
+            const netAmount = grossAmount * (1 - TAX_RATE);
+
+            // UI 업데이트
+            grossAmountDisplay.textContent = formatCurrency(grossAmount);
+            netAmountDisplay.textContent = formatCurrency(netAmount);
+        };
+
+        // 페이지 로드 시 즉시 1회 실행
+        calculateEarnings();
+        
+        // 1초(1000ms)마다 업데이트
+        setInterval(calculateEarnings, 1000);
+
+    </script>
+</body>
+</html>
