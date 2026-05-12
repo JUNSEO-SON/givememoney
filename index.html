@@ -35,75 +35,70 @@
 
         <div class="relative z-10 flex flex-col items-center">
             
-            <div class="text-sm text-slate-500 font-semibold mb-2 uppercase tracking-widest">현재 시각</div>
-            <div id="currentTime" class="text-5xl md:text-6xl font-extrabold text-slate-800 mono-number mb-8 glow-text tracking-tight flex items-baseline">
+            <div class="inline-flex items-center justify-center space-x-2 bg-white/50 backdrop-blur-sm border border-slate-200 rounded-full px-4 py-1.5 mb-6 shadow-sm">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                </span>
+                <span class="text-xs text-slate-600 font-bold tracking-wider uppercase">Live Current Time</span>
+            </div>
+            <div id="currentTime" class="text-5xl md:text-6xl font-extrabold text-slate-800 mono-number mb-10 glow-text tracking-tight flex items-baseline">
                 <!-- Javascript에서 시간 채워짐 -->
                 00:00:00
             </div>
 
-            <div class="w-full bg-slate-100 rounded-2xl p-4 mb-6 shadow-inner">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-semibold text-slate-500">근무 시간</span>
-                    <span class="text-base font-bold text-slate-700">08:00 - 18:00</span>
-                </div>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-semibold text-slate-500">점심 시간 (제외)</span>
-                    <span class="text-base font-bold text-slate-700">12:00 - 13:00</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-semibold text-slate-500">적용 시급</span>
-                    <span class="text-base font-bold text-blue-600">30,000원</span>
-                </div>
-            </div>
-
-            <!-- 진행률 및 표정 변화 -->
-            <div class="w-full bg-white border border-slate-200 rounded-2xl p-5 shadow-sm mb-6 flex flex-col items-center">
-                <div class="text-sm font-semibold text-slate-500 mb-3">퇴근까지 달성률</div>
-                <div class="flex items-center justify-center gap-5 w-full">
-                    <div id="statusEmoji" class="text-5xl transition-transform duration-300 transform hover:scale-110">😫</div>
-                    <div class="flex-1">
-                        <div class="flex justify-between items-end mb-2">
-                            <span id="progressPercentText" class="text-2xl font-bold text-slate-700 mono-number">0.0000%</span>
+            <div class="w-full bg-white/80 backdrop-blur border border-slate-200/60 rounded-3xl p-6 shadow-lg shadow-slate-200/50 mb-6 relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-indigo-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-end mb-4">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-slate-500 mb-1">오늘의 퇴근 여정</span>
+                            <span id="progressPercentText" class="text-3xl font-extrabold text-slate-800 mono-number tracking-tight">0.0000%</span>
                         </div>
-                        <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-                            <div id="progressBar" class="bg-gradient-to-r from-blue-400 to-indigo-500 h-3 rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
-                        </div>
+                        <div id="statusEmoji" class="text-6xl transition-transform duration-300 transform hover:scale-110 origin-bottom">😫</div>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden shadow-inner p-0.5">
+                        <div id="progressBar" class="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 h-full rounded-full transition-all duration-1000 ease-linear shadow-sm" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="w-full space-y-4">
+            <div class="w-full bg-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden mb-4 transform transition-all hover:scale-[1.02] duration-300">
+                <!-- 배경 장식 -->
+                <div class="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
+                <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500 rounded-full mix-blend-screen filter blur-3xl opacity-20"></div>
                 
-                <!-- 세전 금액 (명목액) -->
-                <div class="relative group">
-                    <div class="absolute inset-0 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-2xl transform transition-transform group-hover:scale-105 opacity-50"></div>
-                    <div class="relative bg-white border border-blue-100 rounded-2xl p-5 shadow-sm">
-                        <div class="text-sm font-bold text-blue-500 mb-1">세전 누적 금액 (명목액)</div>
-                        <div class="flex items-end gap-2">
-                            <span id="grossAmount" class="text-3xl font-extrabold text-slate-800 mono-number">0</span>
-                            <span class="text-lg font-bold text-slate-600 mb-1">원</span>
-                        </div>
+                <!-- 상단 뱃지 (시급 명시) -->
+                <div class="relative z-10 flex justify-end mb-3">
+                    <span class="px-3 py-1 bg-slate-700/80 text-blue-300 text-xs font-bold rounded-full border border-slate-600 shadow-sm">
+                        적용 시급 : 30,000원
+                    </span>
+                </div>
+                
+                <div class="relative z-10 border-b border-slate-600/60 pb-5 mb-5">
+                    <div class="text-slate-300 font-medium text-sm mb-2">현재까지 번 돈 (세전 명목액)</div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="grossAmount" class="text-4xl md:text-5xl font-extrabold text-white mono-number tracking-tight">0</span>
+                        <span class="text-xl font-medium text-slate-400">원</span>
                     </div>
                 </div>
 
-                <!-- 세후 금액 -->
-                <div class="relative group">
-                    <div class="absolute inset-0 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-2xl transform transition-transform group-hover:scale-105 opacity-50"></div>
-                    <div class="relative bg-white border border-emerald-100 rounded-2xl p-5 shadow-sm">
-                        <div class="flex justify-between items-center mb-1">
-                            <div class="text-sm font-bold text-emerald-600">세후 누적 금액</div>
-                            <div class="text-xs font-semibold text-slate-400 px-2 py-1 bg-slate-100 rounded-full">세율 3.3% 적용</div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="text-emerald-400 font-bold text-sm tracking-wide flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                            실제 수령액 (세후)
                         </div>
-                        <div class="flex items-end gap-2">
-                            <span id="netAmount" class="text-4xl font-extrabold text-slate-800 mono-number text-emerald-700">0</span>
-                            <span class="text-xl font-bold text-emerald-600 mb-1">원</span>
-                        </div>
+                        <div class="text-[10px] font-bold text-slate-300 px-2 py-1 bg-slate-700/80 rounded-lg">3.3% 공제</div>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="netAmount" class="text-4xl md:text-5xl font-extrabold text-emerald-50 mono-number tracking-tight">0</span>
+                        <span class="text-xl font-medium text-emerald-200/50">원</span>
                     </div>
                 </div>
-
             </div>
             
-            <div class="mt-6 text-center text-xs text-slate-400 font-medium">
+            <div class="mt-4 text-center text-xs text-slate-400 font-medium space-y-1">
                 <p>본 계산기는 오늘(자정 이후)을 기준으로 작동합니다.</p>
                 <p>소수점 이하는 버림 처리됩니다.</p>
             </div>
